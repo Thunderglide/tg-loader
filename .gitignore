@@ -1,0 +1,81 @@
+# Виртуальные окружения
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Файлы сессий Telethon
+*.session
+*.session-journal
+
+# База данных SQLite (данные экспорта)
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+data/files/
+!data/.gitkeep   # опционально, чтобы сохранить пустую папку в репозитории
+
+# Логи
+logs/
+*.log
+
+# Переменные окружения (содержат API ключи)
+.env
+.env.local
+.env.*.local
+
+# Кэш Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Файлы сборки и дистрибутивы
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Тестовые и временные файлы
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# IDE
+.vscode/
+.idea/
+*.iml
+.project
+.pydevproject
+.settings/
+
+# Файлы ОС
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# MyPy, pytest и др.
+.mypy_cache/
+.pytest_cache/
+.tox/
+.coverage
+htmlcov/
+
+# Файлы конфигурации (если они содержат чувствительные данные, но config.py обычно не содержит секретов, его можно оставить; если не хотите добавлять в репозиторий, раскомментируйте)
+# config.py
