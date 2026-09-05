@@ -21,7 +21,7 @@ from telethon import TelegramClient, utils
 from telethon.tl.functions.auth import SendCodeRequest
 from telethon.tl.tlobject import TLObject
 from telethon.tl.types import (
-    Message, MessageMediaPhoto, MessageMediaDocument,
+    Message, MessageActionTopicCreate, MessageMediaPhoto, MessageMediaDocument,
     MessageMediaWebPage, MessageMediaGame, MessageMediaInvoice,
     MessageMediaGeo, MessageMediaContact, MessageMediaDice,
     PeerChannel, PeerChat, PeerUser, CodeSettings
@@ -236,6 +236,28 @@ def extract_author_info(message: Message) -> tuple:
             if not author_name and hasattr(message.sender, 'title'):
                 author_name = message.sender.title
     return author_id, author_name
+
+
+GENERAL_TOPIC_ID = 1
+
+
+def extract_thread_id(message: Message, is_forum: bool) -> Optional[int]:
+    """Id темы форума (подчата). Для General — 1, иначе None вне форума."""
+    action = getattr(message, 'action', None)
+    if isinstance(action, MessageActionTopicCreate):
+        return message.id
+
+    reply_to = getattr(message, 'reply_to', None)
+    if reply_to and getattr(reply_to, 'forum_topic', False):
+        topic_id = getattr(reply_to, 'reply_to_top_id', None) or getattr(
+            reply_to, 'reply_to_msg_id', None
+        )
+        if topic_id:
+            return topic_id
+
+    if is_forum:
+        return GENERAL_TOPIC_ID
+    return None
 
 
 # Поля TL-сообщения, которые сохраняем в raw_data (без служебных атрибутов Telethon).
@@ -479,6 +501,9 @@ async def load_chat(chat_reference, client: TelegramClient, db: Database):
     title = getattr(entity, 'title', None) or getattr(entity, 'username', None) or str(chat_telegram_id)
     chat_type = get_chat_type(entity)
     username = getattr(entity, 'username', None)
+    is_forum = bool(getattr(entity, 'forum', False))
+    if is_forum:
+        logger.info(f"Чат {title} — форум, темы будут записаны в thread_id")
 
     chat_record = await db.get_chat_by_telegram_id(chat_telegram_id)
     if not chat_record:
@@ -529,11 +554,7 @@ async def load_chat(chat_reference, client: TelegramClient, db: Database):
             if hasattr(msg, 'reply_to') and msg.reply_to:
                 reply_to = msg.reply_to.reply_to_msg_id
 
-            thread_id = None
-            if hasattr(msg, 'reply_to_top_id'):
-                thread_id = msg.reply_to_top_id
-            elif hasattr(msg, 'thread_id'):
-                thread_id = msg.thread_id
+            thread_id = extract_thread_id(msg, is_forum)
 
             reactions_json = extract_reactions(msg)
             raw_data = serialize_raw_data(msg)
