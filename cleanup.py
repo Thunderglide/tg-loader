@@ -10,9 +10,7 @@ import shutil
 import sys
 from pathlib import Path
 
-BASE_DIR = Path('data')
-DB_PATH = BASE_DIR / 'telegram_export.db'
-FILES_DIR = BASE_DIR / 'files'
+from exporter import DB_PATH, FILES_DIR, human_size
 
 DB_SIDECARS = (
     DB_PATH,
@@ -20,17 +18,6 @@ DB_SIDECARS = (
     Path(str(DB_PATH) + '-wal'),
     Path(str(DB_PATH) + '-shm'),
 )
-
-
-def human_size(num_bytes: int) -> str:
-    size = float(num_bytes)
-    for unit in ('B', 'KB', 'MB', 'GB'):
-        if size < 1024 or unit == 'GB':
-            if unit == 'B':
-                return f'{int(size)} {unit}'
-            return f'{size:.1f} {unit}'
-        size /= 1024
-    return f'{num_bytes} B'
 
 
 def collect_targets() -> tuple[list[Path], int, int]:
